@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucky Egg — SKU Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3350;
+    --accent: #6c63ff;
+    --accent2: #00d4aa;
+    --red: #ff4d6d;
+    --green: #00d4aa;
+    --yellow: #ffd166;
+    --text: #e8eaf6;
+    --muted: #8b8fa8;
+    --hero: #6c63ff;
+    --launch: #00d4aa;
+    --pass: #8b8fa8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; min-height: 100vh; }
+  
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .logo-text { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+  .logo-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .last-updated { font-size: 12px; color: var(--muted); }
+  .config-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+  .config-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .setup-banner {
+    background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,212,170,0.15));
+    border: 1px solid rgba(108,99,255,0.3);
+    border-radius: 12px;
+    padding: 24px 32px;
+    margin: 32px 32px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .setup-banner h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .setup-banner p { font-size: 13px; color: var(--muted); }
+  .sheet-input-row { display: flex; gap: 10px; align-items: center; }
+  .sheet-input { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 13px; width: 380px; outline: none; transition: border 0.2s; }
+  .sheet-input:focus { border-color: var(--accent); }
+  .connect-btn { background: linear-gradient(135deg, var(--accent), #8b5cf6); border: none; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: opacity 0.2s; white-space: nowrap; }
+  .connect-btn:hover { opacity: 0.85; }
+
+  .controls {
+    padding: 24px 32px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .tab-group { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 2px; }
+  .tab { padding: 7px 16px; border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--muted); transition: all 0.2s; border: none; background: none; }
+  .tab.active { background: var(--accent); color: white; }
+  .tab.hero.active { background: var(--hero); }
+  .tab.launch.active { background: var(--launch); }
+  .tab.pass.active { background: var(--pass); }
+  .spacer { flex: 1; }
+  .region-select, .channel-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+    padding: 24px 32px 40px;
+  }
+
+  .sku-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .sku-card:hover { border-color: rgba(108,99,255,0.5); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+  .sku-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .sku-card.hero::before { background: linear-gradient(90deg, var(--hero), #8b5cf6); }
+  .sku-card.launch::before { background: linear-gradient(90deg, var(--launch), #00b8d9); }
+  .sku-card.pass::before { background: var(--pass); }
+
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .sku-name { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; margin-bottom: 4px; }
+  .sku-id { font-size: 11px; color: var(--muted); font-family: monospace; }
+  .badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge.hero { background: rgba(108,99,255,0.2); color: var(--hero); }
+  .badge.launch { background: rgba(0,212,170,0.2); color: var(--launch); }
+  .badge.pass { background: rgba(139,143,168,0.2); color: var(--pass); }
+
+  .metrics-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .metric { background: var(--surface2); border-radius: 10px; padding: 12px 14px; }
+  .metric-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+  .channel-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+  .metric-value { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .metric-change { display: flex; align-items: center; gap: 4px; margin-top: 3px; font-size: 12px; font-weight: 600; }
+  .metric-change.up { color: var(--green); }
+  .metric-change.down { color: var(--red); }
+  .metric-change.flat { color: var(--muted); }
+
+  .regions-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .region-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 12px; flex: 1; min-width: 80px; }
+  .region-flag { font-size: 14px; margin-right: 4px; }
+  .region-units { font-weight: 700; font-size: 14px; }
+  .region-change { font-size: 10px; margin-top: 1px; }
+  .region-change.up { color: var(--green); }
+  .region-change.down { color: var(--red); }
+
+  .chart-container { position: relative; height: 70px; margin-bottom: 4px; }
+  .chart-label { font-size: 10px; color: var(--muted); text-align: right; }
+
+  .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .total-label { font-size: 11px; color: var(--muted); }
+  .total-value { font-size: 13px; font-weight: 700; }
+  .trend-arrow { font-size: 18px; }
+
+  .empty-state { text-align: center; padding: 80px 32px; color: var(--muted); }
+  .empty-state h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+
+  .loading { display: flex; align-items: center; justify-content: center; padding: 80px; gap: 12px; color: var(--muted); }
+  .spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 768px) {
+    .header { padding: 16px; }
+    .controls { padding: 16px 16px 0; }
+    .grid { padding: 16px; gap: 14px; grid-template-columns: 1fr; }
+    .setup-banner { flex-direction: column; margin: 16px; }
+    .sheet-input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">🥚</div>
+    <div>
+      <div class="logo-text">Lucky Egg</div>
+      <div class="logo-sub">SKU Performance Dashboard</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="last-updated" id="lastUpdated">Not connected</span>
+    <button class="config-btn" onclick="toggleSetup()">⚙ Configure</button>
+  </div>
+</div>
+
+<div class="setup-banner" id="setupBanner">
+  <div>
+    <h3>Connect your Google Sheet</h3>
+    <p>Paste the URL or Sheet ID of your Lucky Egg data sheet to load live data</p>
+  </div>
+  <div class="sheet-input-row">
+    <input class="sheet-input" id="sheetInput" placeholder="https://docs.google.com/spreadsheets/d/..." />
+    <button class="connect-btn" onclick="connectSheet()">Connect Sheet</button>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="tab-group">
+    <button class="tab active" onclick="setGroup('all', this)">All SKUs</button>
+    <button class="tab hero" onclick="setGroup('hero', this)">🏆 Hero</button>
+    <button class="tab launch" onclick="setGroup('launch', this)">🚀 Launches</button>
+    <button class="tab pass" onclick="setGroup('pass', this)">📦 Pass</button>
+  </div>
+  <div class="spacer"></div>
+  <select class="region-select" id="regionFilter" onchange="renderCards()">
+    <option value="all">🌍 All Regions</option>
+    <option value="UK">🇬🇧 UK</option>
+    <option value="US">🇺🇸 US</option>
+    <option value="CA">🇨🇦 Canada</option>
+  </select>
+  <select class="channel-select" id="channelFilter" onchange="renderCards()">
+    <option value="all">All Channels</option>
+    <option value="amazon">Amazon</option>
+    <option value="tiktok">TikTok Shop</option>
+  </select>
+</div>
+
+<div id="mainContent">
+  <div class="empty-state">
+    <h3>No data yet</h3>
+    <p>Connect your Google Sheet above to load your SKU performance data</p>
+  </div>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let allData = [];
+let activeGroup = 'all';
+let charts = {};
+const REGIONS = { UK: '🇬🇧', US: '🇺🇸', CA: '🇨🇦' };
+const CHANNEL_COLORS = { amazon: '#FF9900', tiktok: '#00d4aa' };
+
+// ─── Demo data (shown when no sheet connected) ───────────────────────────────
+function generateDemo() {
+  const skus = [
+    { id: 'LE-001', name: 'Original Lucky Egg', group: 'hero' },
+    { id: 'LE-002', name: 'Lucky Egg Pro Max', group: 'hero' },
+    { id: 'LE-003', name: 'Lucky Egg Mini', group: 'hero' },
+    { id: 'LE-004', name: 'Lucky Egg Bundle', group: 'hero' },
+    { id: 'LE-NL-001', name: 'Sunrise Edition', group: 'launch' },
+    { id: 'LE-NL-002', name: 'Midnight Series', group: 'launch' },
+    { id: 'LE-NL-003', name: 'Crystal Pack', group: 'launch' },
+    { id: 'LE-P-001', name: 'Classic White', group: 'pass' },
+    { id: 'LE-P-002', name: 'Basic Set', group: 'pass' },
+  ];
+  return skus.map(sku => {
+    const regions = ['UK', 'US', 'CA'];
+    const channels = ['amazon', 'tiktok'];
+    const history = [];
+    let base = Math.floor(Math.random() * 80) + 20;
+    for (let i = 14; i >= 0; i--) {
+      const dayData = { date: getDaysAgo(i), regions: {}, channels: {} };
+      regions.forEach(r => {
+        dayData.regions[r] = { amazon: randInt(base * 0.3, base * 0.7), tiktok: randInt(base * 0.1, base * 0.5) };
+      });
+      channels.forEach(c => {
+        dayData.channels[c] = Object.values(dayData.regions).reduce((sum, r) => sum + r[c], 0);
+      });
+      dayData.total = Object.values(dayData.channels).reduce((a, b) => a + b, 0);
+      history.push(dayData);
+      base = Math.max(5, base + randInt(-8, 10));
+    }
+    return { ...sku, history };
+  });
+}
+
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function getDaysAgo(n) {
+  const d = new Date(); d.setDate(d.getDate() - n);
+  return d.toISOString().split('T')[0];
+}
+
+// ─── Sheet connection ─────────────────────────────────────────────────────────
+function extractSheetId(input) {
+  const m = input.match(/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : input.trim();
+}
+
+async function connectSheet() {
+  const input = document.getElementById('sheetInput').value.trim();
+  if (!input) return;
+  const sheetId = extractSheetId(input);
+  localStorage.setItem('sheetId', sheetId);
+  await loadSheetData(sheetId);
+}
+
+async function loadSheetData(sheetId) {
+  const content = document.getElementById('mainContent');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div> Loading data...</div>';
+  try {
+    // Fetch SKU config tab
+    const configUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Config`;
+    const salesUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Sales`;
+    const [configRes, salesRes] = await Promise.all([fetch(configUrl), fetch(salesUrl)]);
+    const configText = await configRes.text();
+    const salesText = await salesRes.text();
+    const configJson = JSON.parse(configText.match(/google\.visualization\.Query\.setResponse\((.+)\)/s)[1]);
+    const salesJson = JSON.parse(salesText.match(/google\.visualization\.Query\.setResponse\((.+)\)/s)[1]);
+    allData = parseSheetData(configJson, salesJson);
+    document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    document.getElementById('setupBanner').style.display = 'none';
+    renderCards();
+  } catch(e) {
+    content.innerHTML = '<div class="empty-state"><h3>Could not load sheet</h3><p>Make sure the sheet is published and the Config + Sales tabs exist.<br>Showing demo data instead.</p></div>';
+    loadDemo();
+  }
+}
+
+function parseSheetData(configJson, salesJson) {
+  // Config sheet: SKU_ID | Name | Group
+  const skuMap = {};
+  configJson.table.rows.forEach(row => {
+    if (!row.c[0]?.v) return;
+    skuMap[row.c[0].v] = { id: row.c[0].v, name: row.c[1]?.v || row.c[0].v, group: (row.c[2]?.v || 'pass').toLowerCase() };
+  });
+  // Sales sheet: Date | SKU_ID | Region | Channel | Units
+  const salesBySkuDate = {};
+  salesJson.table.rows.forEach(row => {
+    if (!row.c[0]?.v) return;
+    const date = row.c[0].v; const skuId = row.c[1]?.v; const region = row.c[2]?.v;
+    const channel = (row.c[3]?.v || '').toLowerCase(); const units = parseInt(row.c[4]?.v) || 0;
+    if (!skuId) return;
+    if (!salesBySkuDate[skuId]) salesBySkuDate[skuId] = {};
+    if (!salesBySkuDate[skuId][date]) salesBySkuDate[skuId][date] = { date, regions: {UK:{amazon:0,tiktok:0},US:{amazon:0,tiktok:0},CA:{amazon:0,tiktok:0}}, channels: {amazon:0,tiktok:0}, total: 0 };
+    if (region && salesBySkuDate[skuId][date].regions[region]) {
+      salesBySkuDate[skuId][date].regions[region][channel] = (salesBySkuDate[skuId][date].regions[region][channel] || 0) + units;
+    }
+    salesBySkuDate[skuId][date].channels[channel] = (salesBySkuDate[skuId][date].channels[channel] || 0) + units;
+    salesBySkuDate[skuId][date].total += units;
+  });
+  return Object.keys(skuMap).map(id => ({
+    ...skuMap[id],
+    history: Object.values(salesBySkuDate[id] || {}).sort((a,b) => a.date.localeCompare(b.date)).slice(-15)
+  }));
+}
+
+function loadDemo() {
+  allData = generateDemo();
+  document.getElementById('lastUpdated').textContent = 'Demo data';
+  renderCards();
+}
+
+// ─── Rendering ────────────────────────────────────────────────────────────────
+function setGroup(group, el) {
+  activeGroup = group;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderCards();
+}
+
+function renderCards() {
+  const regionFilter = document.getElementById('regionFilter').value;
+  const channelFilter = document.getElementById('channelFilter').value;
+  let skus = allData.filter(s => activeGroup === 'all' || s.group === activeGroup);
+  if (!skus.length) {
+    document.getElementById('mainContent').innerHTML = '<div class="empty-state"><h3>No SKUs in this group</h3><p>Add SKUs to the Config tab of your Google Sheet</p></div>';
+    return;
+  }
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+  document.getElementById('mainContent').innerHTML = '<div class="grid" id="skuGrid"></div>';
+  const grid = document.getElementById('skuGrid');
+  skus.forEach(sku => grid.appendChild(buildCard(sku, regionFilter, channelFilter)));
+  skus.forEach(sku => drawChart(sku, regionFilter, channelFilter));
+}
+
+function getFiltered(history, regionFilter, channelFilter) {
+  return history.map(day => {
+    let total = 0;
+    const regions = {};
+    if (regionFilter === 'all') {
+      Object.keys(REGIONS).forEach(r => {
+        const rv = day.regions[r] || {};
+        const rTotal = channelFilter === 'all' ? Object.values(rv).reduce((a,b)=>a+b,0) : (rv[channelFilter]||0);
+        regions[r] = rTotal;
+        total += rTotal;
+      });
+    } else {
+      const rv = day.regions[regionFilter] || {};
+      const rTotal = channelFilter === 'all' ? Object.values(rv).reduce((a,b)=>a+b,0) : (rv[channelFilter]||0);
+      regions[regionFilter] = rTotal;
+      total = rTotal;
+    }
+    return { ...day, filteredTotal: total, filteredRegions: regions };
+  });
+}
+
+function buildCard(sku, regionFilter, channelFilter) {
+  const filtered = getFiltered(sku.history, regionFilter, channelFilter);
+  const today = filtered[filtered.length - 1] || {};
+  const yesterday = filtered[filtered.length - 2] || {};
+  const todayTotal = today.filteredTotal || 0;
+  const yestTotal = yesterday.filteredTotal || 0;
+  const change = yestTotal > 0 ? ((todayTotal - yestTotal) / yestTotal * 100) : 0;
+  const changeClass = change > 0 ? 'up' : change < 0 ? 'down' : 'flat';
+  const changeSign = change > 0 ? '+' : '';
+  const changeArrow = change > 0 ? '▲' : change < 0 ? '▼' : '→';
+
+  const regionsHtml = Object.keys(regionFilter === 'all' ? REGIONS : {[regionFilter]: true}).map(r => {
+    const val = (today.filteredRegions || {})[r] || 0;
+    const prevVal = (yesterday.filteredRegions || {})[r] || 0;
+    const rc = prevVal > 0 ? ((val - prevVal) / prevVal * 100) : 0;
+    const rcClass = rc > 0 ? 'up' : rc < 0 ? 'down' : 'flat';
+    return `<div class="region-chip">
+      <div style="font-size:11px;color:var(--muted)">${REGIONS[r] || ''} ${r}</div>
+      <div class="region-units">${val}</div>
+      <div class="region-change ${rcClass}">${rc > 0 ? '+' : ''}${rc.toFixed(1)}% DoD</div>
+    </div>`;
+  }).join('');
+
+  const amazonToday = channelFilter !== 'tiktok' ? Object.values(today.regions || {}).reduce((s,r) => s+(r.amazon||0), 0) : 0;
+  const tiktokToday = channelFilter !== 'amazon' ? Object.values(today.regions || {}).reduce((s,r) => s+(r.tiktok||0), 0) : 0;
+  const amazonYest = channelFilter !== 'tiktok' ? Object.values(yesterday.regions || {}).reduce((s,r) => s+(r.amazon||0), 0) : 0;
+  const tiktokYest = channelFilter !== 'amazon' ? Object.values(yesterday.regions || {}).reduce((s,r) => s+(r.tiktok||0), 0) : 0;
+  const amzChange = amazonYest > 0 ? ((amazonToday-amazonYest)/amazonYest*100) : 0;
+  const ttChange = tiktokYest > 0 ? ((tiktokToday-tiktokYest)/tiktokYest*100) : 0;
+
+  const div = document.createElement('div');
+  div.className = `sku-card ${sku.group}`;
+  div.id = `card-${sku.id}`;
+  div.innerHTML = `
+    <div class="card-header">
+      <div>
+        <div class="sku-name">${sku.name}</div>
+        <div class="sku-id">${sku.id}</div>
+      </div>
+      <span class="badge ${sku.group}">${sku.group === 'hero' ? '🏆 Hero' : sku.group === 'launch' ? '🚀 Launch' : '📦 Pass'}</span>
+    </div>
+    <div class="metrics-row">
+      <div class="metric">
+        <div class="metric-label"><span class="channel-dot" style="background:#FF9900"></span> Amazon</div>
+        <div class="metric-value">${amazonToday}</div>
+        <div class="metric-change ${amzChange>0?'up':amzChange<0?'down':'flat'}">${amzChange>0?'▲':'▼'} ${Math.abs(amzChange).toFixed(1)}% DoD</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label"><span class="channel-dot" style="background:#00d4aa"></span> TikTok Shop</div>
+        <div class="metric-value">${tiktokToday}</div>
+        <div class="metric-change ${ttChange>0?'up':ttChange<0?'down':'flat'}">${ttChange>0?'▲':'▼'} ${Math.abs(ttChange).toFixed(1)}% DoD</div>
+      </div>
+    </div>
+    <div class="regions-row">${regionsHtml}</div>
+    <div class="chart-container"><canvas id="chart-${sku.id}"></canvas></div>
+    <div class="chart-label">14-day units trend</div>
+    <div class="card-footer">
+      <div><div class="total-label">Today's Total</div><div class="total-value">${todayTotal} units</div></div>
+      <div style="text-align:right"><div class="total-label">Day-on-Day</div><div class="metric-change ${changeClass}" style="justify-content:flex-end;font-size:15px">${changeArrow} ${changeSign}${change.toFixed(1)}%</div></div>
+    </div>
+  `;
+  return div;
+}
+
+function drawChart(sku, regionFilter, channelFilter) {
+  const ctx = document.getElementById(`chart-${sku.id}`);
+  if (!ctx) return;
+  const filtered = getFiltered(sku.history, regionFilter, channelFilter);
+  const labels = filtered.map(d => { const dt = new Date(d.date); return (dt.getMonth()+1)+'/'+dt.getDate(); });
+  const amzData = filtered.map(d => channelFilter !== 'tiktok' ? Object.values(d.regions||{}).reduce((s,r)=>s+(r.amazon||0),0) : 0);
+  const ttData = filtered.map(d => channelFilter !== 'amazon' ? Object.values(d.regions||{}).reduce((s,r)=>s+(r.tiktok||0),0) : 0);
+
+  charts[sku.id] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Amazon', data: amzData, backgroundColor: 'rgba(255,153,0,0.7)', borderRadius: 3, stack: 'a' },
+        { label: 'TikTok', data: ttData, backgroundColor: 'rgba(0,212,170,0.7)', borderRadius: 3, stack: 'a' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: '#1a1d27', titleColor: '#e8eaf6', bodyColor: '#8b8fa8',
+        borderColor: '#2e3350', borderWidth: 1,
+        callbacks: { title: (i) => i[0].label, label: (i) => ` ${i.dataset.label}: ${i.raw} units` }
+      }},
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { color: '#8b8fa8', font: { size: 9 }, maxRotation: 0 } },
+        y: { stacked: true, grid: { color: 'rgba(46,51,80,0.5)' }, ticks: { color: '#8b8fa8', font: { size: 9 } } }
+      }
+    }
+  });
+}
+
+function toggleSetup() {
+  const b = document.getElementById('setupBanner');
+  b.style.display = b.style.display === 'none' ? '' : 'none';
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+const savedId = localStorage.getItem('sheetId');
+if (savedId) {
+  document.getElementById('sheetInput').value = savedId;
+  loadSheetData(savedId);
+} else {
+  loadDemo();
+}
+</script>
+</body>
+</html>
