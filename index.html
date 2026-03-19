@@ -7,169 +7,178 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --surface2: #22263a;
-    --border: #2e3350;
-    --accent: #6c63ff;
-    --accent2: #00d4aa;
-    --red: #ff4d6d;
-    --green: #00d4aa;
-    --yellow: #ffd166;
-    --text: #e8eaf6;
-    --muted: #8b8fa8;
-    --hero: #6c63ff;
-    --launch: #00d4aa;
-    --pass: #8b8fa8;
+    --bg: #f5f6fa;
+    --surface: #ffffff;
+    --surface2: #f0f1f7;
+    --border: #e2e4ee;
+    --accent: #5b52e8;
+    --accent2: #00b896;
+    --red: #e8394d;
+    --green: #00b896;
+    --yellow: #f59e0b;
+    --text: #1a1d2e;
+    --muted: #6b7280;
+    --hero: #5b52e8;
+    --launch: #00b896;
+    --pass: #9ca3af;
+    --shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 24px rgba(0,0,0,0.10);
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; min-height: 100vh; }
-  
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-system,sans-serif; min-height:100vh; }
+
+  /* ── Header ── */
   .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 20px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    backdrop-filter: blur(10px);
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    padding:0 32px;
+    height:60px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:sticky; top:0; z-index:200;
+    box-shadow:var(--shadow);
   }
-  .logo { display: flex; align-items: center; gap: 12px; }
-  .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-  .logo-text { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
-  .logo-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
-  .header-right { display: flex; align-items: center; gap: 16px; }
-  .last-updated { font-size: 12px; color: var(--muted); }
-  .config-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
-  .config-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .logo { display:flex; align-items:center; gap:10px; cursor:pointer; }
+  .logo-icon { width:32px; height:32px; background:linear-gradient(135deg,var(--accent),#8b7ff7); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .logo-text { font-size:16px; font-weight:700; letter-spacing:-0.3px; }
+  .logo-sub { font-size:11px; color:var(--muted); }
+  .header-right { display:flex; align-items:center; gap:12px; }
+  .last-updated { font-size:12px; color:var(--muted); }
+  .config-btn { background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:7px 14px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:500; transition:all .15s; }
+  .config-btn:hover { border-color:var(--accent); color:var(--accent); }
 
+  /* ── Layout: sidebar + main ── */
+  .app { display:flex; min-height:calc(100vh - 60px); }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width:220px; min-width:220px;
+    background:var(--surface);
+    border-right:1px solid var(--border);
+    padding:16px 0;
+    position:sticky; top:60px; height:calc(100vh - 60px);
+    overflow-y:auto;
+  }
+  .sidebar-group { margin-bottom:4px; }
+  .sidebar-group-label {
+    font-size:10px; font-weight:700; letter-spacing:.7px; text-transform:uppercase;
+    color:var(--muted); padding:12px 16px 6px;
+  }
+  .sidebar-item {
+    display:flex; align-items:center; gap:10px;
+    padding:9px 16px; cursor:pointer; font-size:13px; font-weight:500;
+    color:var(--muted); border-radius:0; transition:all .15s;
+    border-left:3px solid transparent;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .sidebar-item:hover { background:var(--surface2); color:var(--text); }
+  .sidebar-item.active { background:#ede8ff; color:var(--accent); border-left-color:var(--accent); }
+  .sidebar-item.active.launch { background:#e0faf4; color:var(--launch); border-left-color:var(--launch); }
+  .sidebar-item.active.pass { background:var(--surface2); color:var(--text); border-left-color:var(--pass); }
+  .sku-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .dot-hero { background:var(--hero); }
+  .dot-launch { background:var(--launch); }
+  .dot-pass { background:var(--pass); }
+
+  /* ── Main content ── */
+  .main { flex:1; padding:32px; overflow-y:auto; }
+
+  /* ── Setup banner ── */
   .setup-banner {
-    background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,212,170,0.15));
-    border: 1px solid rgba(108,99,255,0.3);
-    border-radius: 12px;
-    padding: 24px 32px;
-    margin: 32px 32px 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
+    background:linear-gradient(135deg,rgba(91,82,232,.08),rgba(0,184,150,.08));
+    border:1px solid rgba(91,82,232,.2);
+    border-radius:12px; padding:20px 24px;
+    display:flex; align-items:center; justify-content:space-between; gap:20px;
+    margin-bottom:28px;
   }
-  .setup-banner h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
-  .setup-banner p { font-size: 13px; color: var(--muted); }
-  .sheet-input-row { display: flex; gap: 10px; align-items: center; }
-  .sheet-input { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 13px; width: 380px; outline: none; transition: border 0.2s; }
-  .sheet-input:focus { border-color: var(--accent); }
-  .connect-btn { background: linear-gradient(135deg, var(--accent), #8b5cf6); border: none; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: opacity 0.2s; white-space: nowrap; }
-  .connect-btn:hover { opacity: 0.85; }
+  .setup-banner h3 { font-size:14px; font-weight:600; margin-bottom:4px; }
+  .setup-banner p { font-size:12px; color:var(--muted); }
+  .sheet-input-row { display:flex; gap:8px; align-items:center; }
+  .sheet-input { background:var(--surface); border:1px solid var(--border); color:var(--text); padding:9px 13px; border-radius:8px; font-size:12px; width:340px; outline:none; transition:border .15s; }
+  .sheet-input:focus { border-color:var(--accent); }
+  .connect-btn { background:var(--accent); border:none; color:white; padding:9px 18px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; transition:opacity .15s; white-space:nowrap; }
+  .connect-btn:hover { opacity:.85; }
 
-  .controls {
-    padding: 24px 32px 0;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
+  /* ── SKU page header ── */
+  .sku-page-header {
+    display:flex; align-items:flex-start; justify-content:space-between;
+    margin-bottom:28px; flex-wrap:wrap; gap:12px;
   }
-  .tab-group { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 2px; }
-  .tab { padding: 7px 16px; border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--muted); transition: all 0.2s; border: none; background: none; }
-  .tab.active { background: var(--accent); color: white; }
-  .tab.hero.active { background: var(--hero); }
-  .tab.launch.active { background: var(--launch); }
-  .tab.pass.active { background: var(--pass); }
-  .spacer { flex: 1; }
-  .region-select, .channel-select {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    cursor: pointer;
-    outline: none;
+  .sku-title { font-size:24px; font-weight:800; letter-spacing:-.5px; margin-bottom:4px; }
+  .sku-meta { display:flex; align-items:center; gap:10px; }
+  .sku-id-badge { font-size:12px; font-family:monospace; background:var(--surface2); border:1px solid var(--border); padding:3px 10px; border-radius:20px; color:var(--muted); }
+  .badge { font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:.4px; }
+  .badge.hero { background:#ede8ff; color:var(--hero); }
+  .badge.launch { background:#e0faf4; color:var(--launch); }
+  .badge.pass { background:var(--surface2); color:var(--pass); }
+
+  /* ── Summary row ── */
+  .summary-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:14px; margin-bottom:28px; }
+  .summary-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:16px 18px; box-shadow:var(--shadow); position:relative; overflow:hidden;
   }
+  .summary-card.primary { border-color:var(--accent); }
+  .summary-card::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--border); }
+  .summary-card.total::after { background:linear-gradient(90deg,var(--accent),#8b7ff7); }
+  .summary-card.amazon::after { background:#FF9900; }
+  .summary-card.tiktok::after { background:var(--launch); }
+  .sc-label { font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+  .sc-dot { width:7px; height:7px; border-radius:50%; }
+  .sc-value { font-size:28px; font-weight:800; letter-spacing:-1px; line-height:1; margin-bottom:4px; }
+  .sc-change { display:flex; align-items:center; gap:4px; font-size:12px; font-weight:600; }
+  .sc-change.up { color:var(--green); }
+  .sc-change.down { color:var(--red); }
+  .sc-change.flat { color:var(--muted); }
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 20px;
-    padding: 24px 32px 40px;
+  /* ── Channel × Region grid ── */
+  .breakdown-section { margin-bottom:28px; }
+  .section-title { font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:14px; }
+  .breakdown-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; }
+  .breakdown-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:10px;
+    padding:14px 16px; box-shadow:var(--shadow);
   }
+  .bc-label { font-size:11px; color:var(--muted); font-weight:600; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+  .bc-flag { font-size:14px; }
+  .bc-value { font-size:22px; font-weight:800; letter-spacing:-.5px; margin-bottom:2px; }
+  .bc-change { font-size:11px; font-weight:600; }
+  .bc-change.up { color:var(--green); }
+  .bc-change.down { color:var(--red); }
+  .bc-change.flat { color:var(--muted); }
 
-  .sku-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 20px;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-  .sku-card:hover { border-color: rgba(108,99,255,0.5); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
-  .sku-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
-  .sku-card.hero::before { background: linear-gradient(90deg, var(--hero), #8b5cf6); }
-  .sku-card.launch::before { background: linear-gradient(90deg, var(--launch), #00b8d9); }
-  .sku-card.pass::before { background: var(--pass); }
+  /* ── Chart ── */
+  .chart-section { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 20px 16px; box-shadow:var(--shadow); margin-bottom:28px; }
+  .chart-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .chart-title { font-size:13px; font-weight:700; }
+  .chart-legend { display:flex; gap:14px; }
+  .legend-item { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); font-weight:500; }
+  .legend-dot { width:8px; height:8px; border-radius:50%; }
+  .chart-container { position:relative; height:180px; }
 
-  .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
-  .sku-name { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; margin-bottom: 4px; }
-  .sku-id { font-size: 11px; color: var(--muted); font-family: monospace; }
-  .badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .badge.hero { background: rgba(108,99,255,0.2); color: var(--hero); }
-  .badge.launch { background: rgba(0,212,170,0.2); color: var(--launch); }
-  .badge.pass { background: rgba(139,143,168,0.2); color: var(--pass); }
+  /* ── Empty / Loading ── */
+  .empty-state { text-align:center; padding:80px 32px; color:var(--muted); }
+  .empty-state h3 { font-size:18px; font-weight:600; margin-bottom:8px; color:var(--text); }
+  .loading { display:flex; align-items:center; justify-content:center; padding:80px; gap:10px; color:var(--muted); }
+  .spinner { width:20px; height:20px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
 
-  .metrics-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-  .metric { background: var(--surface2); border-radius: 10px; padding: 12px 14px; }
-  .metric-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
-  .channel-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
-  .metric-value { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
-  .metric-change { display: flex; align-items: center; gap: 4px; margin-top: 3px; font-size: 12px; font-weight: 600; }
-  .metric-change.up { color: var(--green); }
-  .metric-change.down { color: var(--red); }
-  .metric-change.flat { color: var(--muted); }
-
-  .regions-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-  .region-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 12px; flex: 1; min-width: 80px; }
-  .region-flag { font-size: 14px; margin-right: 4px; }
-  .region-units { font-weight: 700; font-size: 14px; }
-  .region-change { font-size: 10px; margin-top: 1px; }
-  .region-change.up { color: var(--green); }
-  .region-change.down { color: var(--red); }
-
-  .chart-container { position: relative; height: 70px; margin-bottom: 4px; }
-  .chart-label { font-size: 10px; color: var(--muted); text-align: right; }
-
-  .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
-  .total-label { font-size: 11px; color: var(--muted); }
-  .total-value { font-size: 13px; font-weight: 700; }
-  .trend-arrow { font-size: 18px; }
-
-  .empty-state { text-align: center; padding: 80px 32px; color: var(--muted); }
-  .empty-state h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
-
-  .loading { display: flex; align-items: center; justify-content: center; padding: 80px; gap: 12px; color: var(--muted); }
-  .spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  @media (max-width: 768px) {
-    .header { padding: 16px; }
-    .controls { padding: 16px 16px 0; }
-    .grid { padding: 16px; gap: 14px; grid-template-columns: 1fr; }
-    .setup-banner { flex-direction: column; margin: 16px; }
-    .sheet-input { width: 100%; }
+  @media (max-width:700px) {
+    .sidebar { display:none; }
+    .main { padding:16px; }
+    .summary-row { grid-template-columns:1fr 1fr; }
   }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="logo">
+  <div class="logo" onclick="goHome()">
     <div class="logo-icon">🥚</div>
     <div>
       <div class="logo-text">Lucky Egg</div>
-      <div class="logo-sub">SKU Performance Dashboard</div>
+      <div class="logo-sub">SKU Dashboard</div>
     </div>
   </div>
   <div class="header-right">
@@ -178,313 +187,313 @@
   </div>
 </div>
 
-<div class="setup-banner" id="setupBanner">
-  <div>
-    <h3>Connect your Google Sheet</h3>
-    <p>Paste the URL or Sheet ID of your Lucky Egg data sheet to load live data</p>
-  </div>
-  <div class="sheet-input-row">
-    <input class="sheet-input" id="sheetInput" placeholder="https://docs.google.com/spreadsheets/d/..." />
-    <button class="connect-btn" onclick="connectSheet()">Connect Sheet</button>
-  </div>
-</div>
-
-<div class="controls">
-  <div class="tab-group">
-    <button class="tab active" onclick="setGroup('all', this)">All SKUs</button>
-    <button class="tab hero" onclick="setGroup('hero', this)">🏆 Hero</button>
-    <button class="tab launch" onclick="setGroup('launch', this)">🚀 Launches</button>
-    <button class="tab pass" onclick="setGroup('pass', this)">📦 Pass</button>
-  </div>
-  <div class="spacer"></div>
-  <select class="region-select" id="regionFilter" onchange="renderCards()">
-    <option value="all">🌍 All Regions</option>
-    <option value="UK">🇬🇧 UK</option>
-    <option value="US">🇺🇸 US</option>
-    <option value="CA">🇨🇦 Canada</option>
-  </select>
-  <select class="channel-select" id="channelFilter" onchange="renderCards()">
-    <option value="all">All Channels</option>
-    <option value="amazon">Amazon</option>
-    <option value="tiktok">TikTok Shop</option>
-  </select>
-</div>
-
-<div id="mainContent">
-  <div class="empty-state">
-    <h3>No data yet</h3>
-    <p>Connect your Google Sheet above to load your SKU performance data</p>
-  </div>
+<div class="app">
+  <nav class="sidebar" id="sidebar"><!-- built by JS --></nav>
+  <main class="main" id="mainContent">
+    <div class="loading"><div class="spinner"></div> Loading...</div>
+  </main>
 </div>
 
 <script>
-// ─── State ───────────────────────────────────────────────────────────────────
+// ── State ────────────────────────────────────────────────────────────────────
 let allData = [];
-let activeGroup = 'all';
+let activeSku = null;
 let charts = {};
-const REGIONS = { UK: '🇬🇧', US: '🇺🇸', CA: '🇨🇦' };
-const CHANNEL_COLORS = { amazon: '#FF9900', tiktok: '#00d4aa' };
 
-// ─── Demo data (shown when no sheet connected) ───────────────────────────────
-function generateDemo() {
-  const skus = [
-    { id: 'LE-001', name: 'Original Lucky Egg', group: 'hero' },
-    { id: 'LE-002', name: 'Lucky Egg Pro Max', group: 'hero' },
-    { id: 'LE-003', name: 'Lucky Egg Mini', group: 'hero' },
-    { id: 'LE-004', name: 'Lucky Egg Bundle', group: 'hero' },
-    { id: 'LE-NL-001', name: 'Sunrise Edition', group: 'launch' },
-    { id: 'LE-NL-002', name: 'Midnight Series', group: 'launch' },
-    { id: 'LE-NL-003', name: 'Crystal Pack', group: 'launch' },
-    { id: 'LE-P-001', name: 'Classic White', group: 'pass' },
-    { id: 'LE-P-002', name: 'Basic Set', group: 'pass' },
+const REGIONS = { UK:'🇬🇧', US:'🇺🇸', CA:'🇨🇦' };
+const AMZ_COLOR  = '#FF9900';
+const TT_COLOR   = '#00b896';
+const AMZ_LIGHT  = 'rgba(255,153,0,0.15)';
+const TT_LIGHT   = 'rgba(0,184,150,0.15)';
+
+// ── Demo data ─────────────────────────────────────────────────────────────────
+function rnd(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function daysAgo(n){ const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().split('T')[0]; }
+
+function generateDemo(){
+  const skus=[
+    {id:'LE-001',name:'Original Lucky Egg',group:'hero'},
+    {id:'LE-002',name:'Lucky Egg Pro',group:'hero'},
+    {id:'LE-003',name:'Lucky Egg Mini',group:'hero'},
+    {id:'LE-004',name:'Lucky Egg Bundle',group:'hero'},
+    {id:'LE-NL-01',name:'Sunrise Edition',group:'launch'},
+    {id:'LE-NL-02',name:'Midnight Series',group:'launch'},
+    {id:'LE-NL-03',name:'Crystal Pack',group:'launch'},
+    {id:'LE-P-01',name:'Classic White',group:'pass'},
+    {id:'LE-P-02',name:'Basic Set',group:'pass'},
   ];
-  return skus.map(sku => {
-    const regions = ['UK', 'US', 'CA'];
-    const channels = ['amazon', 'tiktok'];
-    const history = [];
-    let base = Math.floor(Math.random() * 80) + 20;
-    for (let i = 14; i >= 0; i--) {
-      const dayData = { date: getDaysAgo(i), regions: {}, channels: {} };
-      regions.forEach(r => {
-        dayData.regions[r] = { amazon: randInt(base * 0.3, base * 0.7), tiktok: randInt(base * 0.1, base * 0.5) };
+  return skus.map(sku=>{
+    const history=[];
+    let base=rnd(30,120);
+    for(let i=14;i>=0;i--){
+      const amzUK=rnd(base*.2,base*.4), amzUS=rnd(base*.3,base*.5), amzCA=rnd(base*.1,base*.2);
+      const ttUK=rnd(base*.1,base*.3),  ttUS=rnd(base*.1,base*.25), ttCA=rnd(0,base*.1);
+      history.push({
+        date:daysAgo(i),
+        amzUK,amzUS,amzCA,ttUK,ttUS,ttCA,
+        amazon:amzUK+amzUS+amzCA,
+        tiktok:ttUK+ttUS+ttCA,
+        total:amzUK+amzUS+amzCA+ttUK+ttUS+ttCA
       });
-      channels.forEach(c => {
-        dayData.channels[c] = Object.values(dayData.regions).reduce((sum, r) => sum + r[c], 0);
-      });
-      dayData.total = Object.values(dayData.channels).reduce((a, b) => a + b, 0);
-      history.push(dayData);
-      base = Math.max(5, base + randInt(-8, 10));
+      base=Math.max(5,base+rnd(-10,12));
     }
-    return { ...sku, history };
+    return {...sku,history};
   });
 }
 
-function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-function getDaysAgo(n) {
-  const d = new Date(); d.setDate(d.getDate() - n);
-  return d.toISOString().split('T')[0];
+// ── Sheet connection ──────────────────────────────────────────────────────────
+function extractSheetId(input){
+  const m=input.match(/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+  return m?m[1]:input.trim();
 }
-
-// ─── Sheet connection ─────────────────────────────────────────────────────────
-function extractSheetId(input) {
-  const m = input.match(/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
-  return m ? m[1] : input.trim();
+async function connectSheet(){
+  const input=document.getElementById('sheetInput').value.trim();
+  if(!input) return;
+  const id=extractSheetId(input);
+  localStorage.setItem('sheetId',id);
+  await loadSheetData(id);
 }
-
-async function connectSheet() {
-  const input = document.getElementById('sheetInput').value.trim();
-  if (!input) return;
-  const sheetId = extractSheetId(input);
-  localStorage.setItem('sheetId', sheetId);
-  await loadSheetData(sheetId);
-}
-
-async function loadSheetData(sheetId) {
-  const content = document.getElementById('mainContent');
-  content.innerHTML = '<div class="loading"><div class="spinner"></div> Loading data...</div>';
-  try {
-    // Fetch SKU config tab
-    const configUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Config`;
-    const salesUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Sales`;
-    const [configRes, salesRes] = await Promise.all([fetch(configUrl), fetch(salesUrl)]);
-    const configText = await configRes.text();
-    const salesText = await salesRes.text();
-    const configJson = JSON.parse(configText.match(/google\.visualization\.Query\.setResponse\((.+)\)/s)[1]);
-    const salesJson = JSON.parse(salesText.match(/google\.visualization\.Query\.setResponse\((.+)\)/s)[1]);
-    allData = parseSheetData(configJson, salesJson);
-    document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
-    document.getElementById('setupBanner').style.display = 'none';
-    renderCards();
-  } catch(e) {
-    content.innerHTML = '<div class="empty-state"><h3>Could not load sheet</h3><p>Make sure the sheet is published and the Config + Sales tabs exist.<br>Showing demo data instead.</p></div>';
+async function loadSheetData(sheetId){
+  setMain('<div class="loading"><div class="spinner"></div> Loading data...</div>');
+  try{
+    const configUrl=`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Config`;
+    const salesUrl=`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=Sales`;
+    const [cRes,sRes]=await Promise.all([fetch(configUrl),fetch(salesUrl)]);
+    const cJson=JSON.parse((await cRes.text()).match(/google\.visualization\.Query\.setResponse\((.+)\)/s)[1]);
+    const sJson=JSON.parse((await sRes.text()).match(/google\.visualization\.Query\.setResponse\((.+)\)/s)[1]);
+    allData=parseSheetData(cJson,sJson);
+    document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
+    document.getElementById('setupBanner')&&(document.getElementById('setupBanner').style.display='none');
+    buildSidebar();
+    showSku(allData[0]?.id);
+  }catch(e){
     loadDemo();
   }
 }
-
-function parseSheetData(configJson, salesJson) {
-  // Config sheet: SKU_ID | Name | Group
-  const skuMap = {};
-  configJson.table.rows.forEach(row => {
-    if (!row.c[0]?.v) return;
-    skuMap[row.c[0].v] = { id: row.c[0].v, name: row.c[1]?.v || row.c[0].v, group: (row.c[2]?.v || 'pass').toLowerCase() };
+function parseSheetData(cJson,sJson){
+  const skuMap={};
+  cJson.table.rows.forEach(r=>{
+    if(!r.c[0]?.v) return;
+    skuMap[r.c[0].v]={id:r.c[0].v,name:r.c[1]?.v||r.c[0].v,group:(r.c[2]?.v||'pass').toLowerCase(),history:[]};
   });
-  // Sales sheet: Date | SKU_ID | Region | Channel | Units
-  const salesBySkuDate = {};
-  salesJson.table.rows.forEach(row => {
-    if (!row.c[0]?.v) return;
-    const date = row.c[0].v; const skuId = row.c[1]?.v; const region = row.c[2]?.v;
-    const channel = (row.c[3]?.v || '').toLowerCase(); const units = parseInt(row.c[4]?.v) || 0;
-    if (!skuId) return;
-    if (!salesBySkuDate[skuId]) salesBySkuDate[skuId] = {};
-    if (!salesBySkuDate[skuId][date]) salesBySkuDate[skuId][date] = { date, regions: {UK:{amazon:0,tiktok:0},US:{amazon:0,tiktok:0},CA:{amazon:0,tiktok:0}}, channels: {amazon:0,tiktok:0}, total: 0 };
-    if (region && salesBySkuDate[skuId][date].regions[region]) {
-      salesBySkuDate[skuId][date].regions[region][channel] = (salesBySkuDate[skuId][date].regions[region][channel] || 0) + units;
+  // Sales cols: Date | SKU_ID | Region | Channel | Units
+  const bySkuDate={};
+  sJson.table.rows.forEach(r=>{
+    if(!r.c[0]?.v||!r.c[1]?.v) return;
+    const date=r.c[0].v, id=r.c[1].v, region=(r.c[2]?.v||'').toUpperCase();
+    const ch=(r.c[3]?.v||'').toLowerCase(), units=parseInt(r.c[4]?.v)||0;
+    if(!bySkuDate[id]) bySkuDate[id]={};
+    if(!bySkuDate[id][date]) bySkuDate[id][date]={date,amzUK:0,amzUS:0,amzCA:0,ttUK:0,ttUS:0,ttCA:0,amazon:0,tiktok:0,total:0};
+    const d=bySkuDate[id][date];
+    if(ch==='amazon'){
+      if(region==='UK') d.amzUK+=units;
+      else if(region==='US') d.amzUS+=units;
+      else if(region==='CA') d.amzCA+=units;
+      d.amazon+=units;
+    } else if(ch==='tiktok'){
+      if(region==='UK') d.ttUK+=units;
+      else if(region==='US') d.ttUS+=units;
+      else if(region==='CA') d.ttCA+=units;
+      d.tiktok+=units;
     }
-    salesBySkuDate[skuId][date].channels[channel] = (salesBySkuDate[skuId][date].channels[channel] || 0) + units;
-    salesBySkuDate[skuId][date].total += units;
+    d.total+=units;
   });
-  return Object.keys(skuMap).map(id => ({
-    ...skuMap[id],
-    history: Object.values(salesBySkuDate[id] || {}).sort((a,b) => a.date.localeCompare(b.date)).slice(-15)
-  }));
-}
-
-function loadDemo() {
-  allData = generateDemo();
-  document.getElementById('lastUpdated').textContent = 'Demo data';
-  renderCards();
-}
-
-// ─── Rendering ────────────────────────────────────────────────────────────────
-function setGroup(group, el) {
-  activeGroup = group;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  renderCards();
-}
-
-function renderCards() {
-  const regionFilter = document.getElementById('regionFilter').value;
-  const channelFilter = document.getElementById('channelFilter').value;
-  let skus = allData.filter(s => activeGroup === 'all' || s.group === activeGroup);
-  if (!skus.length) {
-    document.getElementById('mainContent').innerHTML = '<div class="empty-state"><h3>No SKUs in this group</h3><p>Add SKUs to the Config tab of your Google Sheet</p></div>';
-    return;
-  }
-  Object.values(charts).forEach(c => c.destroy());
-  charts = {};
-  document.getElementById('mainContent').innerHTML = '<div class="grid" id="skuGrid"></div>';
-  const grid = document.getElementById('skuGrid');
-  skus.forEach(sku => grid.appendChild(buildCard(sku, regionFilter, channelFilter)));
-  skus.forEach(sku => drawChart(sku, regionFilter, channelFilter));
-}
-
-function getFiltered(history, regionFilter, channelFilter) {
-  return history.map(day => {
-    let total = 0;
-    const regions = {};
-    if (regionFilter === 'all') {
-      Object.keys(REGIONS).forEach(r => {
-        const rv = day.regions[r] || {};
-        const rTotal = channelFilter === 'all' ? Object.values(rv).reduce((a,b)=>a+b,0) : (rv[channelFilter]||0);
-        regions[r] = rTotal;
-        total += rTotal;
-      });
-    } else {
-      const rv = day.regions[regionFilter] || {};
-      const rTotal = channelFilter === 'all' ? Object.values(rv).reduce((a,b)=>a+b,0) : (rv[channelFilter]||0);
-      regions[regionFilter] = rTotal;
-      total = rTotal;
-    }
-    return { ...day, filteredTotal: total, filteredRegions: regions };
+  Object.keys(skuMap).forEach(id=>{
+    skuMap[id].history=Object.values(bySkuDate[id]||{}).sort((a,b)=>a.date.localeCompare(b.date)).slice(-15);
   });
+  return Object.values(skuMap);
+}
+function loadDemo(){
+  allData=generateDemo();
+  document.getElementById('lastUpdated').textContent='Demo data';
+  buildSidebar();
+  showSku(allData[0]?.id);
 }
 
-function buildCard(sku, regionFilter, channelFilter) {
-  const filtered = getFiltered(sku.history, regionFilter, channelFilter);
-  const today = filtered[filtered.length - 1] || {};
-  const yesterday = filtered[filtered.length - 2] || {};
-  const todayTotal = today.filteredTotal || 0;
-  const yestTotal = yesterday.filteredTotal || 0;
-  const change = yestTotal > 0 ? ((todayTotal - yestTotal) / yestTotal * 100) : 0;
-  const changeClass = change > 0 ? 'up' : change < 0 ? 'down' : 'flat';
-  const changeSign = change > 0 ? '+' : '';
-  const changeArrow = change > 0 ? '▲' : change < 0 ? '▼' : '→';
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+function buildSidebar(){
+  const sidebar=document.getElementById('sidebar');
+  const groups=[{key:'hero',label:'🏆 Hero',cls:'dot-hero'},{key:'launch',label:'🚀 Launches',cls:'dot-launch'},{key:'pass',label:'📦 Pass',cls:'dot-pass'}];
+  sidebar.innerHTML=groups.map(g=>{
+    const items=allData.filter(s=>s.group===g.key);
+    if(!items.length) return '';
+    return `<div class="sidebar-group">
+      <div class="sidebar-group-label">${g.label}</div>
+      ${items.map(s=>`<div class="sidebar-item ${s.group}" id="nav-${s.id}" onclick="showSku('${s.id}')">
+        <span class="sku-dot ${g.cls}"></span>
+        <span style="overflow:hidden;text-overflow:ellipsis">${s.name}</span>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+}
 
-  const regionsHtml = Object.keys(regionFilter === 'all' ? REGIONS : {[regionFilter]: true}).map(r => {
-    const val = (today.filteredRegions || {})[r] || 0;
-    const prevVal = (yesterday.filteredRegions || {})[r] || 0;
-    const rc = prevVal > 0 ? ((val - prevVal) / prevVal * 100) : 0;
-    const rcClass = rc > 0 ? 'up' : rc < 0 ? 'down' : 'flat';
-    return `<div class="region-chip">
-      <div style="font-size:11px;color:var(--muted)">${REGIONS[r] || ''} ${r}</div>
-      <div class="region-units">${val}</div>
-      <div class="region-change ${rcClass}">${rc > 0 ? '+' : ''}${rc.toFixed(1)}% DoD</div>
+function setActive(id){
+  document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById('nav-'+id);
+  if(el){ el.classList.add('active'); el.scrollIntoView({block:'nearest'}); }
+}
+
+// ── SKU page ──────────────────────────────────────────────────────────────────
+function showSku(id){
+  activeSku=id;
+  setActive(id);
+  const sku=allData.find(s=>s.id===id);
+  if(!sku){ setMain('<div class="empty-state"><h3>SKU not found</h3></div>'); return; }
+  destroyCharts();
+
+  const today=sku.history[sku.history.length-1]||{};
+  const yest=sku.history[sku.history.length-2]||{};
+
+  const setupHtml=localStorage.getItem('sheetId')?'':`
+    <div class="setup-banner" id="setupBanner">
+      <div><h3>Connect your Google Sheet</h3><p>Paste your Sheet URL to load live data</p></div>
+      <div class="sheet-input-row">
+        <input class="sheet-input" id="sheetInput" placeholder="https://docs.google.com/spreadsheets/d/..." />
+        <button class="connect-btn" onclick="connectSheet()">Connect</button>
+      </div>
+    </div>`;
+
+  setMain(`
+    ${setupHtml}
+    <div class="sku-page-header">
+      <div>
+        <div class="sku-title">${sku.name}</div>
+        <div class="sku-meta">
+          <span class="sku-id-badge">${sku.id}</span>
+          <span class="badge ${sku.group}">${sku.group==='hero'?'🏆 Hero':sku.group==='launch'?'🚀 Launch':'📦 Pass'}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-row" id="summaryRow"></div>
+
+    <div class="breakdown-section">
+      <div class="section-title">Channel × Region</div>
+      <div class="breakdown-grid" id="breakdownGrid"></div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-header">
+        <div class="chart-title">14-Day Trend</div>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:${AMZ_COLOR}"></span>Amazon</div>
+          <div class="legend-item"><span class="legend-dot" style="background:${TT_COLOR}"></span>TikTok Shop</div>
+        </div>
+      </div>
+      <div class="chart-container"><canvas id="mainChart"></canvas></div>
+    </div>
+  `);
+
+  // Summary cards
+  const summaryDefs=[
+    {key:'total',  label:'Total',         color:'linear-gradient(90deg,var(--accent),#8b7ff7)', dot:null},
+    {key:'amazon', label:'Amazon',        color:AMZ_COLOR, dot:AMZ_COLOR},
+    {key:'tiktok', label:'TikTok Shop',   color:TT_COLOR,  dot:TT_COLOR},
+  ];
+  document.getElementById('summaryRow').innerHTML=summaryDefs.map(def=>{
+    const val=Math.round(today[def.key]||0);
+    const prev=Math.round(yest[def.key]||0);
+    const ch=chg(val,prev);
+    return `<div class="summary-card ${def.key}">
+      <div class="sc-label">
+        ${def.dot?`<span class="sc-dot" style="background:${def.dot}"></span>`:''}
+        ${def.label}
+      </div>
+      <div class="sc-value">${val}</div>
+      <div class="sc-change ${ch.cls}">${ch.arrow} ${ch.str} DoD</div>
     </div>`;
   }).join('');
 
-  const amazonToday = channelFilter !== 'tiktok' ? Object.values(today.regions || {}).reduce((s,r) => s+(r.amazon||0), 0) : 0;
-  const tiktokToday = channelFilter !== 'amazon' ? Object.values(today.regions || {}).reduce((s,r) => s+(r.tiktok||0), 0) : 0;
-  const amazonYest = channelFilter !== 'tiktok' ? Object.values(yesterday.regions || {}).reduce((s,r) => s+(r.amazon||0), 0) : 0;
-  const tiktokYest = channelFilter !== 'amazon' ? Object.values(yesterday.regions || {}).reduce((s,r) => s+(r.tiktok||0), 0) : 0;
-  const amzChange = amazonYest > 0 ? ((amazonToday-amazonYest)/amazonYest*100) : 0;
-  const ttChange = tiktokYest > 0 ? ((tiktokToday-tiktokYest)/tiktokYest*100) : 0;
+  // Breakdown grid: Amazon UK, TikTok UK, Amazon US, TikTok US, Amazon CA, (TikTok CA omitted if zero but kept for consistency)
+  const breakdownDefs=[
+    {key:'amzUK', label:'Amazon UK',      flag:'🇬🇧', color:AMZ_COLOR},
+    {key:'ttUK',  label:'TikTok UK',      flag:'🇬🇧', color:TT_COLOR},
+    {key:'amzUS', label:'Amazon US',      flag:'🇺🇸', color:AMZ_COLOR},
+    {key:'ttUS',  label:'TikTok US',      flag:'🇺🇸', color:TT_COLOR},
+    {key:'amzCA', label:'Amazon CA',      flag:'🇨🇦', color:AMZ_COLOR},
+    {key:'ttCA',  label:'TikTok CA',      flag:'🇨🇦', color:TT_COLOR},
+  ];
+  document.getElementById('breakdownGrid').innerHTML=breakdownDefs.map(def=>{
+    const val=Math.round(today[def.key]||0);
+    const prev=Math.round(yest[def.key]||0);
+    const ch=chg(val,prev);
+    return `<div class="breakdown-card">
+      <div class="bc-label">
+        <span class="bc-flag">${def.flag}</span>
+        <span class="sc-dot" style="background:${def.color};width:7px;height:7px;border-radius:50%;display:inline-block"></span>
+        ${def.label}
+      </div>
+      <div class="bc-value">${val}</div>
+      <div class="bc-change ${ch.cls}">${ch.arrow} ${ch.str} DoD</div>
+    </div>`;
+  }).join('');
 
-  const div = document.createElement('div');
-  div.className = `sku-card ${sku.group}`;
-  div.id = `card-${sku.id}`;
-  div.innerHTML = `
-    <div class="card-header">
-      <div>
-        <div class="sku-name">${sku.name}</div>
-        <div class="sku-id">${sku.id}</div>
-      </div>
-      <span class="badge ${sku.group}">${sku.group === 'hero' ? '🏆 Hero' : sku.group === 'launch' ? '🚀 Launch' : '📦 Pass'}</span>
-    </div>
-    <div class="metrics-row">
-      <div class="metric">
-        <div class="metric-label"><span class="channel-dot" style="background:#FF9900"></span> Amazon</div>
-        <div class="metric-value">${amazonToday}</div>
-        <div class="metric-change ${amzChange>0?'up':amzChange<0?'down':'flat'}">${amzChange>0?'▲':'▼'} ${Math.abs(amzChange).toFixed(1)}% DoD</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label"><span class="channel-dot" style="background:#00d4aa"></span> TikTok Shop</div>
-        <div class="metric-value">${tiktokToday}</div>
-        <div class="metric-change ${ttChange>0?'up':ttChange<0?'down':'flat'}">${ttChange>0?'▲':'▼'} ${Math.abs(ttChange).toFixed(1)}% DoD</div>
-      </div>
-    </div>
-    <div class="regions-row">${regionsHtml}</div>
-    <div class="chart-container"><canvas id="chart-${sku.id}"></canvas></div>
-    <div class="chart-label">14-day units trend</div>
-    <div class="card-footer">
-      <div><div class="total-label">Today's Total</div><div class="total-value">${todayTotal} units</div></div>
-      <div style="text-align:right"><div class="total-label">Day-on-Day</div><div class="metric-change ${changeClass}" style="justify-content:flex-end;font-size:15px">${changeArrow} ${changeSign}${change.toFixed(1)}%</div></div>
-    </div>
-  `;
-  return div;
+  // Chart
+  drawMainChart(sku);
 }
 
-function drawChart(sku, regionFilter, channelFilter) {
-  const ctx = document.getElementById(`chart-${sku.id}`);
-  if (!ctx) return;
-  const filtered = getFiltered(sku.history, regionFilter, channelFilter);
-  const labels = filtered.map(d => { const dt = new Date(d.date); return (dt.getMonth()+1)+'/'+dt.getDate(); });
-  const amzData = filtered.map(d => channelFilter !== 'tiktok' ? Object.values(d.regions||{}).reduce((s,r)=>s+(r.amazon||0),0) : 0);
-  const ttData = filtered.map(d => channelFilter !== 'amazon' ? Object.values(d.regions||{}).reduce((s,r)=>s+(r.tiktok||0),0) : 0);
+function chg(val,prev){
+  if(prev===0&&val===0) return {cls:'flat',arrow:'→',str:'0%'};
+  if(prev===0) return {cls:'up',arrow:'▲',str:'New'};
+  const pct=Math.round((val-prev)/prev*100);
+  return {
+    cls: pct>0?'up':pct<0?'down':'flat',
+    arrow: pct>0?'▲':pct<0?'▼':'→',
+    str: (pct>0?'+':'')+pct+'%'
+  };
+}
 
-  charts[sku.id] = new Chart(ctx, {
-    type: 'bar',
-    data: {
+function drawMainChart(sku){
+  const ctx=document.getElementById('mainChart');
+  if(!ctx) return;
+  const labels=sku.history.map(d=>{ const dt=new Date(d.date); return (dt.getMonth()+1)+'/'+(dt.getDate()); });
+  const amzData=sku.history.map(d=>Math.round(d.amazon||0));
+  const ttData=sku.history.map(d=>Math.round(d.tiktok||0));
+  charts['main']=new Chart(ctx,{
+    type:'bar',
+    data:{
       labels,
-      datasets: [
-        { label: 'Amazon', data: amzData, backgroundColor: 'rgba(255,153,0,0.7)', borderRadius: 3, stack: 'a' },
-        { label: 'TikTok', data: ttData, backgroundColor: 'rgba(0,212,170,0.7)', borderRadius: 3, stack: 'a' }
+      datasets:[
+        {label:'Amazon',data:amzData,backgroundColor:AMZ_COLOR,borderRadius:4,stack:'a'},
+        {label:'TikTok Shop',data:ttData,backgroundColor:TT_COLOR,borderRadius:4,stack:'a'}
       ]
     },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: {
-        backgroundColor: '#1a1d27', titleColor: '#e8eaf6', bodyColor: '#8b8fa8',
-        borderColor: '#2e3350', borderWidth: 1,
-        callbacks: { title: (i) => i[0].label, label: (i) => ` ${i.dataset.label}: ${i.raw} units` }
-      }},
-      scales: {
-        x: { stacked: true, grid: { display: false }, ticks: { color: '#8b8fa8', font: { size: 9 }, maxRotation: 0 } },
-        y: { stacked: true, grid: { color: 'rgba(46,51,80,0.5)' }, ticks: { color: '#8b8fa8', font: { size: 9 } } }
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#fff', titleColor:'#1a1d2e', bodyColor:'#6b7280',
+          borderColor:'#e2e4ee', borderWidth:1,
+          callbacks:{
+            label:(i)=>` ${i.dataset.label}: ${Math.round(i.raw)} units`
+          }
+        }
+      },
+      scales:{
+        x:{stacked:true,grid:{display:false},ticks:{color:'#9ca3af',font:{size:10},maxRotation:0}},
+        y:{stacked:true,grid:{color:'rgba(226,228,238,.6)'},ticks:{color:'#9ca3af',font:{size:10},callback:v=>Math.round(v)}}
       }
     }
   });
 }
 
-function toggleSetup() {
-  const b = document.getElementById('setupBanner');
-  b.style.display = b.style.display === 'none' ? '' : 'none';
+function destroyCharts(){
+  Object.values(charts).forEach(c=>c.destroy());
+  charts={};
 }
 
-// ─── Init ─────────────────────────────────────────────────────────────────────
-const savedId = localStorage.getItem('sheetId');
-if (savedId) {
-  document.getElementById('sheetInput').value = savedId;
+function setMain(html){ document.getElementById('mainContent').innerHTML=html; }
+function goHome(){ if(allData.length) showSku(allData[0].id); }
+function toggleSetup(){
+  const b=document.getElementById('setupBanner');
+  if(b) b.style.display=b.style.display==='none'?'':'none';
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+const savedId=localStorage.getItem('sheetId');
+if(savedId){
+  document.getElementById('sheetInput')&&(document.getElementById('sheetInput').value=savedId);
   loadSheetData(savedId);
 } else {
   loadDemo();
