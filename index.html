@@ -450,16 +450,27 @@ function drawMainChart(sku){
   const amzData=sku.history.map(d=>Math.round(d.amazon||0));
   const ttData=sku.history.map(d=>Math.round(d.tiktok||0));
   charts['main']=new Chart(ctx,{
-    type:'bar',
+    type:'line',
     data:{
       labels,
       datasets:[
-        {label:'Amazon',data:amzData,backgroundColor:AMZ_COLOR,borderRadius:4,stack:'a'},
-        {label:'TikTok Shop',data:ttData,backgroundColor:TT_COLOR,borderRadius:4,stack:'a'}
+        {
+          label:'Amazon',data:amzData,
+          borderColor:AMZ_COLOR,backgroundColor:'rgba(255,153,0,0.08)',
+          borderWidth:2.5,pointRadius:3,pointHoverRadius:5,
+          pointBackgroundColor:AMZ_COLOR,tension:0.35,fill:true
+        },
+        {
+          label:'TikTok Shop',data:ttData,
+          borderColor:TT_COLOR,backgroundColor:'rgba(0,184,150,0.08)',
+          borderWidth:2.5,pointRadius:3,pointHoverRadius:5,
+          pointBackgroundColor:TT_COLOR,tension:0.35,fill:true
+        }
       ]
     },
     options:{
       responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
       plugins:{
         legend:{display:false},
         tooltip:{
@@ -471,8 +482,8 @@ function drawMainChart(sku){
         }
       },
       scales:{
-        x:{stacked:true,grid:{display:false},ticks:{color:'#9ca3af',font:{size:10},maxRotation:0}},
-        y:{stacked:true,grid:{color:'rgba(226,228,238,.6)'},ticks:{color:'#9ca3af',font:{size:10},callback:v=>Math.round(v)}}
+        x:{grid:{display:false},ticks:{color:'#9ca3af',font:{size:10},maxRotation:0}},
+        y:{grid:{color:'rgba(226,228,238,.6)'},ticks:{color:'#9ca3af',font:{size:10},callback:v=>Math.round(v)},beginAtZero:true}
       }
     }
   });
