@@ -1,0 +1,78 @@
+name: Daily SKU Dashboard Update
+on:
+  schedule:
+    # 8:30 UTC (9:30 BST summer) and 9:30 UTC (9:30 GMT winter)
+    # Runs at both times — sheet_writer deduplicates so no double-posts
+    - cron: '30 8 * 4-10 *'   # BST (Apr–Oct)
+    - cron: '30 9 * 11-3 *'   # GMT (Nov–Mar)
+  workflow_dispatch:           # allows manual trigger from GitHub Actions tab
+jobs:
+  update-and-notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          pip install \\
+            google-auth \\
+            google-auth-oauthlib \\
+            google-api-python-client \\
+            playwright \\
+            requests
+          playwright install chromium
+          playwright install-deps chromium
+      - name: Write Google credentials to file
+        run: echo '${{ secrets.GOOGLE_CREDS_JSON }}' > credentials.json
+      - name: Run email parser + sheet writer
+        env:
+          GOOGLE_CREDS_PATH: credentials.json
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+        run: |
+          cd scripts
+          python - <<'EOF'
+          import json, os, sys
+          sys.path.insert(0, '.')
+          from email_parser import fetch_all_records
+          from sheet_writer import write_records
+          with open(os.environ['GOOGLE_CREDS_PATH']) as f:
+              creds = json.load(f)
+          sheet_id = os.environ['SHEET_ID']
+          records = fetch_all_records(creds)
+          if not records:
+              print("WARNING: No records fetched from email — check scheduled report setup")
+          else:
+              written = write_records(creds, sheet_id, records)
+              print(f"Written {written} new records to sheet")
+          EOF
+      - name: Run Slack sender
+        env:
+          GOOGLE_CREDS_PATH: ../credentials.json
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          DASHBOARD_URL: https://lucky-egg-sku-dashboard.vercel.app
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_HERO: hero-product-updates
+          SLACK_CHANNEL_LAUNCH: product-launch
+          SLACK_CHANNEL_PASS: passed-products
+        run: |
+          cd scripts
+          python - <<'EOF'
+          import json, os, sys
+          sys.path.insert(0, '.')
+          from sheet_writer import get_sku_config
+          from slack_sender import run
+          with open(os.environ['GOOGLE_CREDS_PATH']) as f:
+              creds = json.load(f)
+          sheet_id = os.environ['SHEET_ID']
+          skus = get_sku_config(creds, sheet_id)
+          print(f"Found {len(skus)} SKUs in config")
+          run(skus)
+          EOF
+      - name: Clean up credentials
+        if: always()
+        run: rm -f credentials.json
