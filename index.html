@@ -170,6 +170,68 @@
     .summary-row { grid-template-columns:1fr 1fr; }
   }
 </style>
+<style id="le-auth-hide">body{visibility:hidden!important}</style>
+<script>
+(function(){
+  var DOMAIN='luckyegg.co';
+  var CLIENT_ID='YOUR_GOOGLE_CLIENT_ID_HERE';
+  var KEY='le_auth_user';
+  function getUser(){try{return JSON.parse(localStorage.getItem(KEY));}catch{return null;}}
+  function showApp(){var h=document.getElementById('le-auth-hide');if(h)h.remove();var o=document.getElementById('le-overlay');if(o)o.remove();}
+  function addSignOutBtn(user){
+    function tryAdd(){
+      var hr=document.querySelector('.header-right');
+      if(!hr){setTimeout(tryAdd,200);return;}
+      var d=document.createElement('div');
+      d.style.cssText='display:flex;align-items:center;gap:8px;background:rgba(26,29,46,0.06);border-radius:8px;padding:4px 10px;';
+      d.innerHTML=(user.picture?'<img src="'+user.picture+'" style="width:20px;height:20px;border-radius:50%" referrerpolicy="no-referrer">':'')+
+        '<span style="font-size:11px;color:#6b7280">'+user.email+'</span>'+
+        '<button onclick="window.__leOut()" style="background:transparent;border:1px solid #e2e4ee;color:#6b7280;border-radius:4px;padding:2px 8px;font-size:10px;cursor:pointer">Sign out</button>';
+      hr.appendChild(d);
+    }
+    tryAdd();
+  }
+  function showOverlay(){
+    function tryCreate(){
+      if(!document.body){setTimeout(tryCreate,10);return;}
+      var el=document.createElement('div');
+      el.id='le-overlay';
+      el.style.cssText='position:fixed;inset:0;background:#f5f6fa;display:flex;align-items:center;justify-content:center;z-index:99999;visibility:visible;font-family:Inter,-apple-system,sans-serif;';
+      el.innerHTML='<div style="background:#fff;border:1px solid #e2e4ee;border-radius:16px;padding:48px 56px;display:flex;flex-direction:column;align-items:center;gap:20px;max-width:380px;width:90%;box-shadow:0 4px 24px rgba(0,0,0,0.1)">'+
+        '<div style="width:48px;height:48px;background:linear-gradient(135deg,#5b52e8,#8b7ff7);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;">🥚</div>'+
+        '<div style="font-size:20px;font-weight:800;letter-spacing:-.5px;color:#1a1d2e">Lucky Egg</div>'+
+        '<div style="font-size:12px;color:#6b7280;text-align:center;line-height:1.7">SKU Dashboard<br>Sign in with your luckyegg.co account to continue.</div>'+
+        '<div id="le-err" style="display:none;font-size:11px;color:#e8394d;text-align:center;padding:8px 14px;background:rgba(232,57,77,0.07);border-radius:8px;border:1px solid rgba(232,57,77,0.2);line-height:1.6"></div>'+
+        '<div id="le-btn"></div>'+
+        '</div>';
+      document.body.appendChild(el);
+      var s=document.createElement('script');
+      s.src='https://accounts.google.com/gsi/client';
+      s.async=true;
+      s.onload=function(){
+        google.accounts.id.initialize({client_id:CLIENT_ID,callback:handleCred,auto_select:false});
+        google.accounts.id.renderButton(document.getElementById('le-btn'),{theme:'outline',size:'large',text:'signin_with',shape:'rectangular'});
+      };
+      document.head.appendChild(s);
+    }
+    tryCreate();
+  }
+  function handleCred(r){
+    var p=JSON.parse(atob(r.credential.split('.')[1]));
+    if(!p.email||!p.email.endsWith('@'+DOMAIN)){
+      var e=document.getElementById('le-err');
+      if(e){e.textContent='Restricted to @'+DOMAIN+'. Signed in as '+p.email+'.';e.style.display='block';}
+      return;
+    }
+    localStorage.setItem(KEY,JSON.stringify({email:p.email,name:p.name,picture:p.picture}));
+    showApp();addSignOutBtn(p);
+  }
+  window.__leOut=function(){localStorage.removeItem(KEY);window.location.reload();};
+  var u=getUser();
+  if(u){showApp();document.addEventListener('DOMContentLoaded',function(){addSignOutBtn(u);});}
+  else{showOverlay();}
+})();
+</script>
 </head>
 <body>
 
